@@ -1,0 +1,14 @@
+---
+name: dev-skill-design-1201
+description: Modular developer skill number 1201 for category design covering advanced configurations
+category: design
+tags: [auto-generated, developer-utility]
+---
+# Skill 1201: Dev Skill Design 1201
+
+This is a modular developer skill covering modular developer skill number 1201 for category design covering advanced configurations.
+
+## Guidelines
+1. Apply standard best practices for design.
+2. Verify all inputs and constraints before executing commands.
+3. Optimize performance and resource usage.
