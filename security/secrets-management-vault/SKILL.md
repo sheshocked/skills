@@ -1,33 +1,53 @@
 ---
 name: secrets-management-vault
-description: Deploy HashiCorp Vault, inject runtime secrets, and audit access policies.
+description: Deploy HashiCorp Vault, configure transit engine, manage policy access, and read secrets in production.
 category: security
-tags: [vault, secrets, hashicorp, security]
+tags: [vault, hashicorp, secrets, api-security, production]
 ---
 
-# Secrets Management Vault
+# HashiCorp Vault Production Integration Masterclass
 
 ## When to Use
-Use when implementing deploy hashicorp vault, inject runtime secrets, and audit access policies. inside production application development loops.
+Use when managing high-risk production variables (API tokens, private database passwords, encryption keys) to avoid exposing secrets in code commits or environment files.
 
 ## Prerequisites
-- Valid execution environment and library packages.
+- Vault binary installed on server.
 
 ## Workflow
-1. Plan component parameters and interfaces mapping requirements.
-2. Initialize configurations, write setup codes.
-3. Test boundaries, check output conditions.
+1. Initialize and unseal the Vault instance.
+2. Enable key-value (KV) engines.
+3. Configure authentication policies restricting client apps scopes.
+4. Integrate Vault API into application initialization sequences.
 
 ## Key Patterns
-```
-# General setup instructions for secrets-management-vault
-Verify environment parameters match target platform architectures.
+
+### Python Vault API Client (vault_client.py)
+```python
+import os
+import hvac
+
+def load_db_credentials():
+    vault_addr = os.environ.get("VAULT_ADDR", "http://127.0.0.1:8200")
+    vault_token = os.environ.get("VAULT_TOKEN") # Set via runtime env
+
+    client = hvac.Client(url=vault_addr, token=vault_token)
+    if not client.is_authenticated():
+        raise Exception("Vault authentication failed")
+
+    # Read database credentials secret path
+    secret_response = client.secrets.kv.v2.read_secret_version(
+        path="database/production",
+        mount_point="secret"
+    )
+    
+    credentials = secret_response["data"]["data"]
+    return credentials["username"], credentials["password"]
 ```
 
 ## Pitfalls
-- **Incorrect dependencies:** Missing libraries can lead to runtime errors. Check configs before compiling.
-- **Ignoring error scopes:** Catch and handle failures dynamically to prevent system crashes.
+- **Running Vault in dev mode in production:** `vault server -dev` keeps secrets in memory and turns off TLS. Always deploy in production mode with valid TLS configurations.
+- **Unsealed vault lockups:** When VPS restarts, Vault locks (seals) itself. Script dynamic auto-unsealing processes using cloud KMS or secure remote keys.
 
 ## Verification
-- Run local unit checks to confirm outputs match expectations.
-- Inspect logs for errors tags.
+- Verify token constraints: `vault token lookup` should return restricted access scopes.
+- Attempt reading path without token; verify it throws forbidden errors.

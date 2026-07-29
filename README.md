@@ -57,22 +57,22 @@ No placeholders, no empty files. Only real recipes, configurations, and JNI/API 
 - **[`network-segmentation-iptables`](./security/network-segmentation-iptables/SKILL.md)** — Establish UFW/nftables firewalls, limit open ports, block scanner active probing, and restrict subnets.
 - **[`phishing-defense-simulation`](./security/phishing-defense-simulation/SKILL.md)** — Set up GoPhish campaign servers, analyze SMTP message headers, and train filters.
 - **[`reverse-engineering-basics`](./security/reverse-engineering-basics/SKILL.md)** — Decompile APKs using jadx, inspect assembly in ghidra, and patch binary resources.
-- **[`secrets-management-vault`](./security/secrets-management-vault/SKILL.md)** — Deploy HashiCorp Vault, inject runtime secrets, and audit access policies.
+- **[`secrets-management-vault`](./security/secrets-management-vault/SKILL.md)** — Deploy HashiCorp Vault, configure transit engine, manage policy access, and read secrets in production.
 - **[`ssh-security-hardening-advanced`](./security/ssh-security-hardening-advanced/SKILL.md)** — Configure SSH hardware security keys (FIDO2), SSH certificates, and session auditing.
-- **[`web-app-pentesting`](./security/web-app-pentesting/SKILL.md)** — Identify OWASP Top 10 vulnerabilities (SQLi, XSS, CSRF) using Burp Suite and sqlmap.
+- **[`web-app-pentesting`](./security/web-app-pentesting/SKILL.md)** — Audit web app endpoints for SQL injection, XSS, CSRF, and SSRF vulnerabilities using curl and sqlmap.
 
 ### 📂 `engineering`
 
 - **[`api-design-best-practices`](./engineering/api-design-best-practices/SKILL.md)** — Establish RESTful standard routing, cursor pagination, OpenAPI documentation, and idempotency structures.
 - **[`auth-systems-oauth2`](./engineering/auth-systems-oauth2/SKILL.md)** — Establish OAuth2/OIDC flows, handle authorization codes with PKCE parameters, and decode cryptographically signed JWTs.
 - **[`caching-strategies-redis`](./engineering/caching-strategies-redis/SKILL.md)** — Establish cache-aside pattern, cache invalidation, singleflight execution, and redis storage.
-- **[`database-schema-design`](./engineering/database-schema-design/SKILL.md)** — Design relational databases indexes, manage schema migrations, and apply Row Level Security.
+- **[`database-schema-design`](./engineering/database-schema-design/SKILL.md)** — Build safe migrations, partial indexes, multi-tenant row level security (RLS), and GIN/JSONB indexes.
 - **[`distributed-concurrency`](./engineering/distributed-concurrency/SKILL.md)** — Manage distributed locks with Redis (Redlock), prevent race conditions, and secure idempotent actions.
 - **[`error-handling-resilience`](./engineering/error-handling-resilience/SKILL.md)** — Build structured exception hierarchies, exponential backoff retries, and fallback degradation models.
 - **[`graphql-production-architecture`](./engineering/graphql-production-architecture/SKILL.md)** — Prevent GraphQL N+1 queries using DataLoader patterns and secure unified graph federation interfaces.
 - **[`message-queues-kafka`](./engineering/message-queues-kafka/SKILL.md)** — Establish Kafka event pipelines, manage partition keys, and configure consumers offsets.
 - **[`performance-profiling-python`](./engineering/performance-profiling-python/SKILL.md)** — Audit python performance bottlenecks using cProfile, memory_profiler, and py-spy runtime traces.
-- **[`system-design-patterns`](./engineering/system-design-patterns/SKILL.md)** — Implement event-driven microservices architecture, circuit breakers, and rate limiters.
+- **[`system-design-patterns`](./engineering/system-design-patterns/SKILL.md)** — Implement robust system patterns (Circuit Breaker, Singleflight, Rate Limiting) in production APIs.
 
 ### 📂 `design`
 
@@ -107,10 +107,10 @@ No placeholders, no empty files. Only real recipes, configurations, and JNI/API 
 - **[`llm-agent-architecture`](./ai-tools/llm-agent-architecture/SKILL.md)** — Establish ReAct workflows, tool schemas routing, and session history management.
 - **[`llm-evaluation-monitoring`](./ai-tools/llm-evaluation-monitoring/SKILL.md)** — Audit LLM prompt latency, tokens utilization, and factual alignment scores (Ragas).
 - **[`local-llm-deployment`](./ai-tools/local-llm-deployment/SKILL.md)** — Deploy Ollama / vLLM inference runners on custom GPU servers, configuring context limits.
-- **[`mcp-server-development`](./ai-tools/mcp-server-development/SKILL.md)** — Deploy custom Model Context Protocol servers in Node or Python to extend LLM capabilities.
+- **[`mcp-server-development`](./ai-tools/mcp-server-development/SKILL.md)** — Build Model Context Protocol (MCP) servers in Node/TypeScript, implementing custom tools and resources.
 - **[`ocr-document-extraction`](./ai-tools/ocr-document-extraction/SKILL.md)** — Parse raw layout sections, extract structured tables, and format parsed PDF data.
 - **[`prompt-engineering-patterns`](./ai-tools/prompt-engineering-patterns/SKILL.md)** — Build dynamic system instructions templates, few-shot examples configurations, and chain-of-thought routing.
-- **[`rag-pipeline-building`](./ai-tools/rag-pipeline-building/SKILL.md)** — Design vector database chunking structures, semantic search systems, and cross-encoder rerankers.
+- **[`rag-pipeline-building`](./ai-tools/rag-pipeline-building/SKILL.md)** — Build RAG pipelines in Python, chunking text, indexing embeddings in vector databases, and using cross-encoder rerankers.
 - **[`semantic-search-vector`](./ai-tools/semantic-search-vector/SKILL.md)** — Index embeddings in Milvus/Qdrant databases, optimizing index parameters (HNSW/IVF-FLAT).
 - **[`speech-stt-tts-pipelines`](./ai-tools/speech-stt-tts-pipelines/SKILL.md)** — Configure local Whisper transcription loops and generate voice streams using Edge-TTS.
 
