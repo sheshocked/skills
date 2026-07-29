@@ -5,7 +5,7 @@ category: engineering
 tags: [database, postgresql, migrations, RLS, indexes, sql]
 ---
 
-# Database Schema & Migrations Masterclass
+# Database Schema Design
 
 ## When to Use
 Use when designing database schemas and writing migrations for production databases where table locks can freeze APIs.
@@ -42,3 +42,4 @@ USING (tenant_id = current_setting('app.current_tenant_id', true));
 ## Verification
 - Run `EXPLAIN ANALYZE SELECT * FROM users WHERE status = 'active' AND email = 'user@example.com';` to confirm execution hits the partial index.
 - Verify security policies fail queries executed without active tenant contexts.
+

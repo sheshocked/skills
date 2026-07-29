@@ -5,7 +5,7 @@ category: engineering
 tags: [system-design, circuit-breaker, singleflight, concurrency, engineering]
 ---
 
-# System Design & Resilience Patterns Masterclass
+# System Design Patterns
 
 ## When to Use
 Use when building APIs that communicate with external microservices or third-party resources, ensuring network failures do not cascade and exhaust server resources.
@@ -66,3 +66,4 @@ class CircuitBreaker:
 
 ## Verification
 - Run load tests mocking downstream delays; verify requests fail fast immediately after the failure threshold is crossed.
+

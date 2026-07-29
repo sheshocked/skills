@@ -1,17 +1,17 @@
 ---
 name: dark-mode-dynamic
-description: Construct dynamic theme providers, pure OLED black variables, and local persistence theme configurations.
+description: Establish dynamic theme switching, OLED black styles, and state synchronization across layouts.
 category: design
-tags: [dark-mode, oled-black, tailwind, compose, theme-persistence]
+tags: [dark-mode, tailwind-theme, oled-black, theme-sync, css]
 ---
 
-# Dynamic Dark Mode & OLED Black Masterclass
+# Dark Mode Dynamic
 
 ## When to Use
 Use when designing dark aesthetics interfaces (like Incy theme structures) that transition between standard gray-dark and pure battery-saving OLED black (`#000000`) based on device configurations.
 
 ## Prerequisites
-- Tailwind CSS or Jetpack Compose UI configurations.
+- Tailwind CSS / Jetpack Compose.
 
 ## Workflow
 1. Configure primary, surface, and window color maps.
@@ -77,3 +77,4 @@ fun SurfShieldTheme(
 ## Verification
 - Test UI under varying brightness environments.
 - Verify battery utilization curves on OLED hardware screens.
+

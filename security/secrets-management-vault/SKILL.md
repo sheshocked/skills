@@ -5,7 +5,7 @@ category: security
 tags: [vault, hashicorp, secrets, api-security, production]
 ---
 
-# HashiCorp Vault Production Integration Masterclass
+# Secrets Management Vault
 
 ## When to Use
 Use when managing high-risk production variables (API tokens, private database passwords, encryption keys) to avoid exposing secrets in code commits or environment files.
@@ -51,3 +51,4 @@ def load_db_credentials():
 ## Verification
 - Verify token constraints: `vault token lookup` should return restricted access scopes.
 - Attempt reading path without token; verify it throws forbidden errors.
+

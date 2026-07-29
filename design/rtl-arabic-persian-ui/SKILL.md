@@ -1,22 +1,22 @@
 ---
 name: rtl-arabic-persian-ui
-description: Configure Vazirmatn typography, mirror structural layouts, and format Persian numbers dynamically.
+description: Configure RTL layout mirroring, Vazirmatn font-family, and Persian numbers formatting.
 category: design
-tags: [rtl, layout-mirroring, vazirmatn, persian-ui, arabic-ui, web-design]
+tags: [rtl, persian-ui, arabic-layout, vazirmatn, css]
 ---
 
-# RTL Persian/Arabic Layout Mirroring Masterclass
+# Rtl Arabic Persian Ui
 
 ## When to Use
-Use when formatting user interfaces targeting Persian/Arabic regions, ensuring layouts flow naturally from right to left, fonts align properly, and numbers format correctly.
+Use when formatting web user interfaces targeted at Persian/Arabic speakers to mirror layouts and handle localized text wraps.
 
 ## Prerequisites
-- Shabnam or Vazirmatn font files.
+- Persian fonts (Vazirmatn / Shabnam).
 
 ## Workflow
-1. Apply the HTML `dir="rtl"` attribute globally.
-2. Mirror navigation positions, layouts, and icons dynamically.
-3. Localize numerals configurations.
+1. Apply `dir="rtl"` to HTML elements.
+2. Mirror spatial layouts: use logical properties (`ms-*`, `me-*`) instead of directional ones (`ml-*`, `mr-*`).
+3. Bind Vazimatn fonts to UI.
 
 ## Key Patterns
 
@@ -54,9 +54,9 @@ export function toPersianDigits(num) {
 ```
 
 ## Pitfalls
-- **Static padding styles:** Using `margin-left` or `padding-right` instead of `margin-inline-start` breaks spacing when switching directions.
-- **Mirroring wrong icons:** Do not mirror universal icons (e.g. settings gears, information icons). Mirror directional ones (e.g. forward/backward arrows).
+- **Directional arrow icons:** Ensure navigation icons (e.g. back button arrows) flip direction dynamically in RTL.
+- **Numbers formatting:** Format data variables to local strings: `num.toLocaleString('fa-IR')` to display Persian digits.
 
 ## Verification
-- Toggle `dir="rtl"` in inspector and verify no components overlap.
-- Check font rendering behavior on small screen mobile viewports.
+- Inspect layout boxes and confirm alignment changes when toggling `dir="rtl"`.
+- Test rendering of Persian text wraps on small device displays.

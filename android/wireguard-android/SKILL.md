@@ -1,31 +1,32 @@
 ---
 name: wireguard-android
-description: Implement WireGuard client configurations and state management in Android apps using the official Go-backend wrapper.
+description: Integrate the official WireGuard Go-backend library and manage VPN tunnels in Android applications.
 category: android
 tags: [wireguard, android-vpn, go-backend, kotlin, integration]
 ---
 
-# WireGuard Android Integration Masterclass
+# Wireguard Android
 
 ## When to Use
 Use when embedding low-latency, kernel-style WireGuard or AmneziaWG connections inside Android applications.
 
 ## Prerequisites
-- Library dependency `com.wireguard.android:wireguard-android-sdk:1.0.2023` added to Gradle.
+- Library dependency `com.wireguard.android:wireguard-android-sdk` added to build configurations.
 
 ## Workflow
 1. Implement the `Tunnel` interface to observe state transitions.
-2. Initialize `GoBackend` or `Wintun` engine components.
-3. Build the profile configuration (address, key pairs, endpoints, keepalives).
-4. Command the backend to transition state to `UP`.
+2. Initialize `GoBackend` using project contexts.
+3. Construct the profile configuration specifying private keys, dynamic DNS addresses, and keepalive metrics.
+4. Execute state changes in background threads.
 
 ## Key Patterns
 
-### Kotlin Integration Interface (WgTunnelManager.kt)
+### Kotlin Connection Manager (WgTunnelManager.kt)
 ```kotlin
 package com.surfshield.vpn
 
 import android.content.Context
+import android.util.Log
 import com.wireguard.android.backend.Backend
 import com.wireguard.android.backend.GoBackend
 import com.wireguard.android.backend.Tunnel
@@ -63,6 +64,7 @@ class WgTunnelManager(private val context: Context) {
             .addPeer(peer)
             .build()
 
+        // State changes trigger network calls; execute in background threads
         Thread {
             backend.setState(tunnel, Tunnel.State.UP, config)
         }.start()
@@ -77,9 +79,9 @@ class WgTunnelManager(private val context: Context) {
 ```
 
 ## Pitfalls
-- **Main thread execution blocks:** State transitions trigger socket operations. Never call `backend.setState` from the main thread; always wrap it in coroutines or background executor threads.
-- **Port Conflict in User-Space:** GoBackend binds sockets to random ports locally. Ensure proper exception handlers intercept bind conflicts.
+- **UI thread blockages:** State changes block execution during socket binds. Always execute `setState` outside the UI thread.
+- **Port Collisions:** GoBackend binds sockets dynamically. Ensure correct exception interception if ports conflict.
 
 ## Verification
-- Call `backend.getStatistics(tunnel).handshakes()` after 5 seconds to confirm handshake counts are incrementing.
-- Perform speed tests to verify interface latency.
+- Audit handshakes: verify `backend.getStatistics(tunnel).handshakes()` counts increment after 5 seconds.
+

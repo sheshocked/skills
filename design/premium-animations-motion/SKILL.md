@@ -5,7 +5,7 @@ category: design
 tags: [animations, framer-motion, motion-design, web-design, micro-interactions]
 ---
 
-# Premium Spring Animations & Motion Masterclass
+# Premium Animations Motion
 
 ## When to Use
 Use to build high-end UI micro-interactions (e.g. active toggle transitions, status changes, scroll effects) inspired by premium applications.
@@ -56,3 +56,4 @@ export function ToggleButton({ isConnected, onToggle }) {
 ## Verification
 - Test rendering loop performance at 120Hz refresh rates.
 - Verify animation state transitions match user inputs dynamically.
+

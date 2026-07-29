@@ -5,7 +5,7 @@ category: ai-tools
 tags: [mcp, model-context-protocol, nodejs, typescript, sdk, tools]
 ---
 
-# MCP Server Development Masterclass
+# Mcp Server Development
 
 ## When to Use
 Use when extending LLM capabilities (like cursor, claude-desktop, or hermes) to query custom databases, execute shell commands, or integrate proprietary internal APIs.
@@ -91,3 +91,4 @@ main().catch(console.error);
 ## Verification
 - Test connection: Run `node build/server.js` and verify it stays open waiting for stdin.
 - Test queries: Inject JSON payload `{"jsonrpc":"2.0","method":"tools/list","id":1}` via stdin and verify JSON-RPC tool lists response.
+

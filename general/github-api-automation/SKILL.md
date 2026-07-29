@@ -5,7 +5,7 @@ category: general
 tags: [github-api, octokit, releases, automation, bash, python]
 ---
 
-# GitHub API Release & Assets Automation Masterclass
+# Github Api Automation
 
 ## When to Use
 Use when implementing automatic release compilation pipelines (like uploading compiled VPN APK assets to GitHub releases dynamically on tag pushes).
@@ -78,3 +78,4 @@ print("Asset binary uploaded successfully to GitHub Release!")
 ## Verification
 - Query repo assets list using curl: `curl https://api.github.com/repos/sheshocked/skills/releases/tags/v2.5.0`.
 - Verify uploaded file matches compiled MD5 hashes.
+

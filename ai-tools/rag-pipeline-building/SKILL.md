@@ -5,7 +5,7 @@ category: ai-tools
 tags: [rag, vector-search, sentence-transformers, qdrant, reranking, python]
 ---
 
-# RAG Pipeline Development Masterclass
+# Rag Pipeline Building
 
 ## When to Use
 Use to build question-answering systems over custom documentation bases (like manuals, logs, source code) to ground LLM responses and avoid hallucinations.
@@ -26,7 +26,6 @@ Use to build question-answering systems over custom documentation bases (like ma
 ```python
 from qdrant_client import QdrantClient
 from sentence_transformers import SentenceTransformer, CrossEncoder
-import numpy as np
 
 # Load embedding and reranking models
 embed_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -64,3 +63,4 @@ def query_rag(query_text: str, collection_name: str, limit: int = 10):
 ## Verification
 - Test query results: verify retrieved chunks align semantically with queries.
 - Monitor index memory usage under load.
+

@@ -1,102 +1,78 @@
 ---
 name: netlify-edge-vless
-description: Deploy high-performance WebSocket proxy relays on Netlify Edge Functions (Deno runtime) and Cloudflare Workers to bypass IP blocks.
+description: Deploy WebSocket proxy relays on Netlify Edge (Deno runtime) to bypass VPS IP blocks.
 category: protocols
-tags: [netlify, edge-functions, deno, cloudflare-workers, websocket-tunnel, obfuscation, vless]
+tags: [netlify-edge, deno, websocket-proxy, vless-relay, dns-fronting]
 ---
 
-# Netlify Edge Functions VLESS/VMess Relay Masterclass
+# Netlify Edge Vless
 
 ## When to Use
-Use when direct connections to your VPS are blocked by the ISP (e.g. MCI, Irancell) but connections to Netlify CDN nodes are open. This proxies client traffic through Netlify Edge Functions to a hidden origin server.
+Use when direct connections to your VPS are blocked by the ISP, but connections to Netlify CDN nodes are open.
 
 ## Prerequisites
-- Netlify account.
-- Netlify CLI installed (`npm install -g netlify-cli`).
-- Target VLESS+WS inbound running on origin server port 80 (or 443 with valid SSL).
+- Netlify account and CLI interface.
+- VLESS+WS inbound on VPS.
 
 ## Workflow
-1. Write a Deno Edge Function mapping the WebSocket protocol.
-2. Upgrade incoming HTTP requests to WebSockets.
-3. Establish a backend socket to the target origin server.
-4. Bridge the readable and writable streams between client and origin with custom ping keepalives to prevent timeouts.
+1. Write a Deno Edge Function upgrading incoming requests to WebSockets.
+2. Establish dynamic bridge loops connecting client streams to the origin server.
+3. Deploy function with secret paths mapping connection configurations.
 
 ## Key Patterns
 
 ### Deno Edge Function Code (netlify/edge-functions/vless.js)
 ```javascript
-// Deno script running on Netlify Edge nodes
 export default async (request, context) => {
   const url = new URL(request.url);
-  
-  // Obfuscate pathway - restrict to secret path
-  if (url.pathname !== "/my-obfuscated-path") {
+  if (url.pathname !== "/my-secret-ws") {
     return new Response("Not Found", { status: 404 });
   }
 
   if (request.headers.get("upgrade") !== "websocket") {
-    return new Response("Normal Webpage Decoy", { status: 200 });
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {
     const { socket: clientSocket, response } = Deno.upgradeWebSocket(request);
-    
-    // Connect to origin VPS WebSocket server
-    const targetWsUrl = "ws://185.71.219.72:80/ws-path";
-    const originSocket = new WebSocket(targetWsUrl);
+    const originSocket = new WebSocket("ws://185.71.219.72:80/ws-path");
 
-    // Keepalive intervals (Netlify kills connections idle for >30s)
-    let pingInterval;
-
+    let keepalive;
     originSocket.onopen = () => {
-      pingInterval = setInterval(() => {
+      keepalive = setInterval(() => {
         if (originSocket.readyState === WebSocket.OPEN) {
           originSocket.send(new Uint8Array([0x09])); // Raw WebSocket ping frame
         }
       }, 15000);
     };
 
-    clientSocket.onmessage = (event) => {
-      if (originSocket.readyState === WebSocket.OPEN) {
-        originSocket.send(event.data);
-      }
+    clientSocket.onmessage = (e) => {
+      if (originSocket.readyState === WebSocket.OPEN) originSocket.send(e.data);
+    };
+    originSocket.onmessage = (e) => {
+      if (clientSocket.readyState === WebSocket.OPEN) clientSocket.send(e.data);
     };
 
-    originSocket.onmessage = (event) => {
-      if (clientSocket.readyState === WebSocket.OPEN) {
-        clientSocket.send(event.data);
-      }
-    };
-
-    const cleanup = () => {
-      clearInterval(pingInterval);
+    const closeAll = () => {
+      clearInterval(keepalive);
       try { clientSocket.close(); } catch(e) {}
       try { originSocket.close(); } catch(e) {}
     };
 
-    clientSocket.onclose = cleanup;
-    originSocket.onclose = cleanup;
-    clientSocket.onerror = cleanup;
-    originSocket.onerror = cleanup;
+    clientSocket.onclose = closeAll;
+    originSocket.onclose = closeAll;
 
     return response;
   } catch (err) {
-    return new Response(`WebSocket upgrade failed: ${err.message}`, { status: 500 });
+    return new Response("Websocket connection failed", { status: 500 });
   }
 };
 ```
 
-### Netlify Config (netlify.toml)
-```toml
-[[edge_functions]]
-path = "/my-obfuscated-path"
-function = "vless"
-```
-
 ## Pitfalls
-- **High concurrency connection drops:** Serverless runtimes have strict memory limits. Ensure you clear memory buffers and intervals on socket close events.
-- **Client header filtering:** Some clients (like v2rayN) send additional headers that Netlify's reverse proxy blocks. Scrub headers on the proxy wrapper before passing them upstream.
+- **Memory leaks in background loops:** Ensure `clearInterval` is called when either socket is closed.
+- **Client header filtering:** Strip excess headers that the Netlify proxy blocks before passing them to the origin.
 
 ## Verification
-- Deploy using `netlify deploy --prod`.
-- Verify the connection by hitting the endpoint using curl: `curl -i -H "Upgrade: websocket" -H "Connection: Upgrade" https://your-site.netlify.app/my-obfuscated-path` should return `101 Switching Protocols`.
+- Test using curl upgrading connection, verifying `101 Switching Protocols` returns.
+

@@ -1,28 +1,29 @@
 ---
 name: android-vpn-service
-description: Implement production-grade Android VPNService classes in Kotlin, handling local TUN interfaces and JNI loops.
+description: Establish a production-grade Kotlin VpnService, managing local TUN interfaces and JNI loop mappings.
 category: android
-tags: [android-vpn, vpnservice, kotlin, tun-interface, ndk, multithreading]
+tags: [vpnservice, android-vpn, tun-interface, packet-routing, kotlin, surfshield]
 ---
 
-# Android VpnService implementation Masterclass
+# Android Vpn Service
 
 ## When to Use
-Use when building Android VPN clients (e.g. SurfShield) to intercept system IP traffic and route packets programmatically into native protocol engines (WireGuard, Xray).
+Use when building custom Android VPN clients (such as SurfShield) to capture all network traffic, route IP packets, and pass them into low-level protocol engines (WireGuard, Xray).
 
 ## Prerequisites
-- Android SDK 29+ (Q) for dynamic API configurations.
-- NDK toolchain compiled for aarch64.
+- Android SDK 29+ (Q) for per-app dynamic filtering.
+- Native C/C++ or Rust core compiled for targeted device architectures.
 
 ## Workflow
-1. Declare dynamic VpnService binds inside the Android Manifest.
-2. Initialize runtime check configurations.
-3. Configure the virtual TUN interface parameters using `VpnService.Builder`.
-4. Run the socket read/write loops inside background worker threads.
+1. Declare the VPN service and BIND_VPN_SERVICE permission in the manifest.
+2. Request VPN authorization from the user using `VpnService.prepare()`.
+3. Build the virtual TUN interface configuration using `VpnService.Builder` (specifying address, route, DNS, and MTU limits).
+4. Establish the file descriptor, execute JNI bridging, and handle read/write streams inside background worker threads.
+5. Setup clean service destruction and interface closure hooks.
 
 ## Key Patterns
 
-### VPN Service Implementation (VpnCoreService.kt)
+### Kotlin VPN Service Wrapper (VpnCoreService.kt)
 ```kotlin
 package com.surfshield.vpn
 
@@ -30,8 +31,6 @@ import android.content.Intent
 import android.net.VpnService
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.IOException
 
 class VpnCoreService : VpnService(), Runnable {
@@ -44,7 +43,6 @@ class VpnCoreService : VpnService(), Runnable {
         }
     }
 
-    // Native engine declaration
     private external fun startNativeCore(tunFd: Int)
     private external fun stopNativeCore()
 
@@ -58,17 +56,17 @@ class VpnCoreService : VpnService(), Runnable {
             establishVpnInterface()
             val fd = vpnInterface?.fd ?: return
             
-            // Pass FD directly to Rust/C++ network engine
+            // Pass the native File Descriptor directly to Rust/C++
             startNativeCore(fd)
         } catch (e: Exception) {
-            Log.e("VpnCoreService", "Error during VPN execution: ${e.message}")
+            Log.e("VpnCore", "Error during VPN execution: ${e.message}")
         }
     }
 
     private fun establishVpnInterface() {
         vpnInterface = Builder()
             .setSession("SurfShieldCore")
-            .setMtu(1360) // Tune to avoid fragmentation on MCI/Irancell
+            .setMtu(1360) // Critical: Prevents packet fragmentation on Iranian mobile networks (MCI/Irancell)
             .addAddress("10.0.0.2", 32)
             .addRoute("0.0.0.0", 0)
             .addDnsServer("1.1.1.1")
@@ -81,7 +79,7 @@ class VpnCoreService : VpnService(), Runnable {
         try {
             vpnInterface?.close()
         } catch (e: IOException) {
-            Log.e("VpnCoreService", "Failed to close TUN: ${e.message}")
+            Log.e("VpnCore", "Failed to close TUN: ${e.message}")
         }
         vpnThread?.interrupt()
         super.onDestroy()
@@ -90,9 +88,10 @@ class VpnCoreService : VpnService(), Runnable {
 ```
 
 ## Pitfalls
-- **MTU over-allocation:** Cellular interfaces drop packet fragments above 1400 bytes on restricted networks. Enforce `setMtu(1360)` to secure throughput.
-- **DNS Leakage:** If DNS addresses are not explicitly added using `addDnsServer()`, Android will fallback to mobile ISP DNS, exposing target hosts.
+- **Cellular MTU drops:** Enforcing a default MTU of 1500 triggers packet drops on restricted cellular networks. Restrict MTU to `1360` or `1400` to secure connection stability.
+- **DNS Leakage:** If you do not specify DNS servers directly inside the builder, Android defaults to DNS servers provided by the mobile operator, leaking all requests. Always set static DNS (e.g. `1.1.1.1`).
 
 ## Verification
-- Inspect interface: `adb shell ip addr show tun0` should display addresses matching `10.0.0.2`.
-- Audit logs: verify no `IOException: Bad file descriptor` trace alerts occur during service teardowns.
+- Verify TUN routing: run `adb shell ip addr show tun0` and verify the gateway is mapped to `10.0.0.2`.
+- Inspect logs to confirm zero `Bad file descriptor` alerts during reconnection cycles.
+

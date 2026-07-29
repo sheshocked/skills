@@ -1,26 +1,26 @@
 ---
 name: compose-horizontal-scroll
-description: Design optimized horizontal scrolling server/profile carousels in Compose to bypass vertical compression limits on compact viewports.
+description: Build responsive horizontal LazyRow layouts in Compose, preventing vertical text compression on compact screens.
 category: android
-tags: [compose, jetpack-compose, horizontal-scroll, lazyrow, carousels, responsive-ui]
+tags: [compose, lazyrow, horizontal-scroll, carousel, ui-ux, kotlin]
 ---
 
-# Jetpack Compose Horizontal Scroll wrapper Masterclass
+# Compose Horizontal Scroll
 
 ## When to Use
-Use when rendering lists of connection cards, server profiles, or tariff configurations in Android VPN UIs. Standard vertical lists compress card elements, creating layout bloat on mobile screens. Wrapping them in structured horizontal carousels keeps interfaces clean and readable.
+Use when rendering tariff cards, servers profiles, or configs selections inside mobile UI layouts where vertical lists would compress text elements.
 
 ## Prerequisites
-- Jetpack Compose Layout libraries configured.
+- Jetpack Compose Layout libraries.
 
 ## Workflow
-1. Set up a `LazyRow` container with content paddings.
-2. Bind selected states with animated borders and scale parameters.
-3. Configure layout snapping using `rememberFlingBehavior` to lock items in position on swipe.
+1. Set up a `LazyRow` container with content padding.
+2. Animate scale and borders based on selected state.
+3. Configure layout snapping for smooth carousels.
 
 ## Key Patterns
 
-### Compose Card Carousel (ProfileCarousel.kt)
+### Compose Profile Selector (ProfileCarousel.kt)
 ```kotlin
 package com.surfshield.ui
 
@@ -57,8 +57,6 @@ fun ProfileCarousel(
     ) {
         items(profiles, key = { it.id }) { profile ->
             val isActive = profile.id == activeId
-            
-            // Premium scale transitions on active cards
             val scale by animateFloatAsState(if (isActive) 1.05f else 0.95f, label = "scale")
             val borderColor by animateColorAsState(if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent, label = "border")
 
@@ -93,9 +91,9 @@ fun ProfileCarousel(
 ```
 
 ## Pitfalls
-- **Missing items keys:** If `items()` lacks a key mapper, Compose redraws all cards during sorting changes, dropping frames. Always map `key = { it.id }`.
-- **Clipping shadow artifacts:** Outer shadows get cut off by `LazyRow` bounds. Enforce `clipToPadding = false` on parent components.
+- **Recomposition lag:** LazyRow without key mappings triggers full redraws on dataset changes. Always supply `key = { it.id }`.
+- **Card shadow clipping:** Ensure parent containers specify `clipToPadding = false` to prevent card shadows from getting clipped.
 
 ## Verification
-- Run UI test scrolling through 100 profiles to verify recomposition limits.
-- Inspect layouts to verify correct dimensions across small screens.
+- Test UI responsiveness with 50+ elements on screen.
+
