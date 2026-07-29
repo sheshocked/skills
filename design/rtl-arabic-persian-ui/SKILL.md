@@ -1,24 +1,26 @@
 ---
 name: rtl-arabic-persian-ui
-description: Configure RTL layout mirroring, Vazirmatn font-family, and Persian numbers formatting.
+description: Configure Vazirmatn typography, mirror structural layouts, and format Persian numbers dynamically.
 category: design
-tags: [rtl, persian-ui, arabic-layout, vazirmatn, css]
+tags: [rtl, layout-mirroring, vazirmatn, persian-ui, arabic-ui, web-design]
 ---
 
-# Rtl Arabic Persian Ui
+# RTL Persian/Arabic Layout Mirroring Masterclass
 
 ## When to Use
-Use when formatting web user interfaces targeted at Persian/Arabic speakers to mirror layouts and handle localized text wraps.
+Use when formatting user interfaces targeting Persian/Arabic regions, ensuring layouts flow naturally from right to left, fonts align properly, and numbers format correctly.
 
 ## Prerequisites
-- Persian fonts (Vazirmatn / Shabnam).
+- Shabnam or Vazirmatn font files.
 
 ## Workflow
-1. Apply `dir="rtl"` to HTML elements.
-2. Mirror spatial layouts: use logical properties (`ms-*`, `me-*`) instead of directional ones (`ml-*`, `mr-*`).
-3. Bind Vazimatn fonts to UI.
+1. Apply the HTML `dir="rtl"` attribute globally.
+2. Mirror navigation positions, layouts, and icons dynamically.
+3. Localize numerals configurations.
 
 ## Key Patterns
+
+### Global RTL CSS Variables
 ```css
 /* vazirmatn font mapping */
 @font-face {
@@ -28,21 +30,33 @@ Use when formatting web user interfaces targeted at Persian/Arabic speakers to m
   font-style: normal;
 }
 
-body {
-  font-family: 'Vazirmatn', sans-serif;
+:root {
+  font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
 }
 
-/* Logical properties mapping */
-.card {
-  margin-inline-start: 1rem; /* Margins on left in LTR, on right in RTL */
-  text-align: start;
+/* Logical properties prevent hardcoded directional limits */
+.my-card {
+  padding-inline-start: 1.5rem; /* Mirrors padding dynamically */
+  text-align: start;            /* Adjusts to right-align automatically */
 }
 ```
 
+### Persian Numbers Formatter Script
+```javascript
+// Localize numbers statically to Persian representation
+export function toPersianDigits(num) {
+  if (num === null || num === undefined) return "";
+  const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+  return num.toString().replace(/\d/g, (x) => persianDigits[parseInt(x)]);
+}
+
+// Verification output: toPersianDigits(185) -> "۱۸۵"
+```
+
 ## Pitfalls
-- **Directional arrow icons:** Ensure navigation icons (e.g. back button arrows) flip direction dynamically in RTL.
-- **Numbers formatting:** Format data variables to local strings: `num.toLocaleString('fa-IR')` to display Persian digits.
+- **Static padding styles:** Using `margin-left` or `padding-right` instead of `margin-inline-start` breaks spacing when switching directions.
+- **Mirroring wrong icons:** Do not mirror universal icons (e.g. settings gears, information icons). Mirror directional ones (e.g. forward/backward arrows).
 
 ## Verification
-- Inspect layout boxes and confirm alignment changes when toggling `dir="rtl"`.
-- Test rendering of Persian text wraps on small device displays.
+- Toggle `dir="rtl"` in inspector and verify no components overlap.
+- Check font rendering behavior on small screen mobile viewports.

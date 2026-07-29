@@ -1,47 +1,101 @@
 ---
 name: compose-horizontal-scroll
-description: Build premium horizontal scrolling wrappers in Jetpack Compose to prevent vertical layouts compression.
+description: Design optimized horizontal scrolling server/profile carousels in Compose to bypass vertical compression limits on compact viewports.
 category: android
-tags: [horizontal-scroll, compose-layout, recycler-compose, kotlin]
+tags: [compose, jetpack-compose, horizontal-scroll, lazyrow, carousels, responsive-ui]
 ---
 
-# Compose Horizontal Scroll
+# Jetpack Compose Horizontal Scroll wrapper Masterclass
 
 ## When to Use
-Use when rendering segmented lists (e.g. server profiles, config plans) where vertical compression makes UI unreadable on small screens.
+Use when rendering lists of connection cards, server profiles, or tariff configurations in Android VPN UIs. Standard vertical lists compress card elements, creating layout bloat on mobile screens. Wrapping them in structured horizontal carousels keeps interfaces clean and readable.
 
 ## Prerequisites
-- Jetpack Compose UI dependencies.
+- Jetpack Compose Layout libraries configured.
 
 ## Workflow
-1. Set up a `LazyRow` with structured spacing.
-2. Bind horizontal paging behaviors with snappers if carousel styles are requested.
-3. Implement item layout dynamically scaling according to view constraints.
+1. Set up a `LazyRow` container with content paddings.
+2. Bind selected states with animated borders and scale parameters.
+3. Configure layout snapping using `rememberFlingBehavior` to lock items in position on swipe.
 
 ## Key Patterns
+
+### Compose Card Carousel (ProfileCarousel.kt)
 ```kotlin
+package com.surfshield.ui
+
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.dp
+
+data class VpnProfile(val id: String, val name: String, val flag: String, val latency: Int)
+
 @Composable
-fun ProfileHorizontalScroll(profiles: List<VpnProfile>, activeId: String, onSelect: (String) -> Unit) {
+fun ProfileCarousel(
+    profiles: List<VpnProfile>,
+    activeId: String,
+    onSelect: (String) -> Unit
+) {
     LazyRow(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().height(160.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(profiles, key = { it.id }) { profile ->
-            ProfileCard(
-                profile = profile,
-                isActive = profile.id == activeId,
-                onClick = { onSelect(profile.id) }
-            )
+            val isActive = profile.id == activeId
+            
+            // Premium scale transitions on active cards
+            val scale by animateFloatAsState(if (isActive) 1.05f else 0.95f, label = "scale")
+            val borderColor by animateColorAsState(if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent, label = "border")
+
+            Card(
+                modifier = Modifier
+                    .width(130.dp)
+                    .fillMaxHeight()
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                    }
+                    .clickable { onSelect(profile.id) },
+                border = BorderStroke(2.dp, borderColor),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isActive) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(12.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(profile.flag, style = MaterialTheme.typography.headlineMedium)
+                    Column {
+                        Text(profile.name, style = MaterialTheme.typography.titleMedium)
+                        Text("${profile.latency} ms", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                    }
+                }
+            }
         }
     }
 }
 ```
 
 ## Pitfalls
-- **Excessive item heights:** Inside horizontal scrolls, items must specify static bounds to avoid viewport overflow.
-- **Missing item keys:** Fails to animate states without unique ID mapping.
+- **Missing items keys:** If `items()` lacks a key mapper, Compose redraws all cards during sorting changes, dropping frames. Always map `key = { it.id }`.
+- **Clipping shadow artifacts:** Outer shadows get cut off by `LazyRow` bounds. Enforce `clipToPadding = false` on parent components.
 
 ## Verification
-- Test rendering with 50+ elements; scroll horizontally to verify layout stability.
-- Measure FPS during scrolling to confirm zero frame drops.
+- Run UI test scrolling through 100 profiles to verify recomposition limits.
+- Inspect layouts to verify correct dimensions across small screens.

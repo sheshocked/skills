@@ -1,83 +1,129 @@
 ---
 name: vless-reality-nginx
-description: Configure VLESS + REALITY cohosted behind Nginx stream multiplexing using ssl_preread on port 443.
+description: Masterclass configuration for VLESS + Reality cohosted on port 443 with Nginx stream module using ssl_preread for SNI-based routing.
 category: protocols
-tags: [vless, reality, nginx-stream, ssl_preread, reality-ghost, proxy]
+tags: [xray, vless, reality, nginx-stream, ssl_preread, multi-core, reality-ghost]
 ---
 
-# Vless Reality Nginx
+# VLESS Reality Behind Nginx Stream sni-filter Masterclass
 
 ## When to Use
-Use this protocol pattern when you want to cohost your administrative website, subscription page, and VLESS/REALITY active proxy connection on port 443 simultaneously, hiding the proxy behind legitimate web services.
+Use this protocol pattern when you want to cohost an administrative website, a client subscription server, and VLESS/REALITY active connections on port 443 simultaneously. This defeats Active Probing scanners by falling back to a decoy site or standard Google endpoints when unmatched SNIs or direct IPs hit port 443.
 
 ## Prerequisites
-- Linux VPS with Docker / Nginx and Xray installed.
-- Public domain pointing to the server IP.
+- Nginx compiled with `--with-stream` and `--with-stream_ssl_preread_module`.
+- Xray-core installed on the VPS.
+- Decoy website running on port 8080.
+- A subdomain configured on a DNS provider (e.g., `sub.eltemas.fun`).
 
 ## Workflow
-1. Route all incoming port 443 traffic via Nginx Stream.
-2. Enable `ssl_preread` on Nginx Stream to peak at the client TLS ClientHello SNI.
-3. Configure SNI routing: match allowed reality SNIs to local Xray port, otherwise fallback to decoy webserver.
-4. Set up local Xray reality inbound on loopback port.
+1. Route incoming port 443 TCP traffic through Nginx's stream module.
+2. Enable `ssl_preread on` to sniff the Server Name Indication (SNI) from the TLS ClientHello without decrypting the stream.
+3. Map the SNI: Allowed Reality targets (e.g., Google SNIs) go to Xray (port 11443), your subscription domain goes to Nginx HTTP (port 8080), and direct IPs or scanners go to a decoy site (port 8082).
+4. Configure Xray Reality inbound to listen on 127.0.0.1:11443 and decrypt only traffic passing the Reality handshake.
 
 ## Key Patterns
+
+### Nginx Stream Configuration (/etc/nginx/nginx.conf)
 ```nginx
-# Nginx Stream Block (/etc/nginx/nginx.conf)
-load_module modules/ngx_stream_module.so;
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+
+events {
+    worker_connections 4096;
+    multi_accept on;
+}
 
 stream {
+    # Sniff Server Name Indication (SNI) and map to backend ports
     map $ssl_preread_server_name $rg_backend {
-        # Reality SNIs
+        # Reality SNIs mapped directly to Xray reality port
         www.gstatic.com            127.0.0.1:11443;
         ajax.googleapis.com        127.0.0.1:11443;
         fonts.gstatic.com          127.0.0.1:11443;
+        fonts.googleapis.com       127.0.0.1:11443;
         
-        # Admin / Sub site SNI
-        sub.eltemas.fun            127.0.0.1:8080;
+        # User subscription/management panels SNI
+        sub.eltemas.fun            127.0.0.1:8443;
         
-        # Scanners fall to decoy
-        default                    127.0.0.1:8082;
+        # Default fallback (Scanners/Blocked requests) -> Decoy
+        default                    127.0.0.1:8080;
     }
 
     server {
         listen 443 reuseport;
+        listen [::]:443 reuseport;
         ssl_preread on;
+        proxy_protocol on; # Pass client IP to Xray
         proxy_pass $rg_backend;
+        proxy_buffer_size 16k;
     }
 }
 ```
 
+### Xray Configuration (/usr/local/etc/xray/config.json)
 ```json
-// Xray Reality Inbound Config
 {
-  "inbounds": [{
-    "listen": "127.0.0.1",
-    "port": 11443,
-    "protocol": "vless",
-    "settings": {
-      "clients": [{"id": "CLIENT_UUID", "flow": "xtls-rprx-vision"}],
-      "decryption": "none"
-    },
-    "streamSettings": {
-      "network": "tcp",
-      "security": "reality",
-      "realitySettings": {
-        "show": false,
-        "dest": "www.gstatic.com:443",
-        "xver": 0,
-        "serverNames": ["www.gstatic.com", "ajax.googleapis.com", "fonts.gstatic.com"],
-        "privateKey": "PRIVATE_KEY",
-        "shortIds": ["81b8672d2cbf1c16"]
+  "inbounds": [
+    {
+      "listen": "127.0.0.1",
+      "port": 11443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "e44d32a0-43df-40ab-829d-4e92bf180da1",
+            "flow": "xtls-rprx-vision",
+            "level": 0
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "dest": "www.gstatic.com:443",
+          "xver": 1,
+          "serverNames": [
+            "www.gstatic.com",
+            "ajax.googleapis.com",
+            "fonts.gstatic.com",
+            "fonts.googleapis.com"
+          ],
+          "privateKey": "PRIVATE_KEY_GENERATED_BY_X25519",
+          "shortIds": [
+            "81b8672d2cbf1c16",
+            "23871959d88c4cea"
+          ]
+        },
+        "sockopt": {
+          "acceptProxyProtocol": true,
+          "tcpFastOpen": true
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls", "quic"],
+        "routeOnly": true
       }
     }
-  }]
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    }
+  ]
 }
 ```
 
 ## Pitfalls
-- **Port Conflict:** Xray or Nginx HTTP trying to bind directly to 0.0.0.0:443 will crash the service. Ensure only Nginx Stream binds to port 443; bind Xray and Nginx HTTP to `127.0.0.1`.
-- **Active Probing Detection:** Unmatched SNIs must lead to a valid TLS decoy site (like google or a normal blogs site) to pass scanning tests.
+- **Nginx duplicate stream blocks:** Appending stream blocks when Nginx modular structure loads `/etc/nginx/modules-enabled/50-mod-stream.conf` dynamically can trigger a duplicate stream module load error. Ensure `load_module` statements are only declared once.
+- **Xray Xver config mismatch:** When passing `proxy_protocol on` from Nginx, you must specify `"xver": 1` in the Xray streamSettings. Failing to do so causes connection resets.
 
 ## Verification
-- Test connection: `curl -v --resolve sub.eltemas.fun:443:127.0.0.1 https://sub.eltemas.fun` should load the admin site.
-- Verify proxy connection using client (e.g. v2rayNG) connecting over REALITY parameters.
+- Test Nginx configuration: `nginx -t` should pass.
+- Test active probing behavior using curl: `curl -v -k https://<server-ip>` should display the decoy site (running on port 8080) instead of closing connection or exposing Xray TLS.

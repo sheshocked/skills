@@ -1,37 +1,37 @@
-# 🧠 Custom Developer Skills Tap
+# 🧠 Masterpiece Developer Skills Tap
 
-Curated list of exactly **100** high-quality, production-ready, and highly-actionable developer skills. 
+Curated library of **105** high-quality, production-grade, and highly-actionable developer skills.
 
-No placeholders, no 2,000 blank files. Only real recipes.
+No placeholders, no empty files. Only real recipes, configurations, and JNI/API integration blocks.
 
 ## Categories
 
 ### 📂 `android`
 
 - **[`android-localization`](./android/android-localization/SKILL.md)** — Configure RTL mirroring layouts, typography, and resources for Arabic and Persian languages.
-- **[`android-ndk-rust`](./android/android-ndk-rust/SKILL.md)** — Compile native Rust code for Android targets (aarch64, x86_64) and link via JNI.
+- **[`android-ndk-rust`](./android/android-ndk-rust/SKILL.md)** — Build low-level proxy libraries in Rust, compile for arm64 Android targets, and bind using JNI.
 - **[`android-security-keystore`](./android/android-security-keystore/SKILL.md)** — Encrypt user credentials and private configs using Android Hardware-Backed Keystore API.
-- **[`android-vpn-service`](./android/android-vpn-service/SKILL.md)** — Establish a local TUN interface and route packet streams programmatically on Android using JNI/VPNService.
-- **[`compose-horizontal-scroll`](./android/compose-horizontal-scroll/SKILL.md)** — Build premium horizontal scrolling wrappers in Jetpack Compose to prevent vertical layouts compression.
+- **[`android-vpn-service`](./android/android-vpn-service/SKILL.md)** — Implement production-grade Android VPNService classes in Kotlin, handling local TUN interfaces and JNI loops.
+- **[`compose-horizontal-scroll`](./android/compose-horizontal-scroll/SKILL.md)** — Design optimized horizontal scrolling server/profile carousels in Compose to bypass vertical compression limits on compact viewports.
 - **[`compose-navigation`](./android/compose-navigation/SKILL.md)** — Establish type-safe navigation graphs and customized screen transition animations in Compose.
 - **[`gradle-build-optimization`](./android/gradle-build-optimization/SKILL.md)** — Speed up Android compilation using build caching, configuration caching, and dynamic module structures.
 - **[`hilt-dependency-injection`](./android/hilt-dependency-injection/SKILL.md)** — Configure Hilt DI graph, ViewModels injection, and modular dependencies scopes in Android apps.
 - **[`jetpack-compose-performance`](./android/jetpack-compose-performance/SKILL.md)** — Diagnose and optimize Jetpack Compose UI recomposition bottlenecks and memory leaks.
 - **[`room-database`](./android/room-database/SKILL.md)** — Build Room SQLite local schemas, migrations, relations, and Flow database query models.
-- **[`wireguard-android`](./android/wireguard-android/SKILL.md)** — Integrate the official WireGuard Android Go/Rust library for modern VPN tunnel implementation.
+- **[`wireguard-android`](./android/wireguard-android/SKILL.md)** — Implement WireGuard client configurations and state management in Android apps using the official Go-backend wrapper.
 - **[`workmanager-background`](./android/workmanager-background/SKILL.md)** — Schedule persistent background tasks with network and device constraints using Android WorkManager.
 
 ### 📂 `protocols`
 
-- **[`amneziawg-obfuscation`](./protocols/amneziawg-obfuscation/SKILL.md)** — Deploy AmneziaWG (obfuscated WireGuard) to defeat Deep Packet Inspection on restrictive networks.
+- **[`amneziawg-obfuscation`](./protocols/amneziawg-obfuscation/SKILL.md)** — Complete deployment and parameter tuning for AmneziaWG obfuscation, bypassing WireGuard protocol detection.
 - **[`cdn-websocket-tunnel`](./protocols/cdn-websocket-tunnel/SKILL.md)** — Establish VLESS + WebSocket + TLS tunnels behind CDN edge proxies (Cloudflare/ArvanCloud).
 - **[`hysteria2-quic`](./protocols/hysteria2-quic/SKILL.md)** — Deploy Hysteria2 QUIC-based VPN protocol, tuning congestion control for high packet loss networks.
 - **[`marzban-panel`](./protocols/marzban-panel/SKILL.md)** — Deploy Marzban multi-node management panel, configure subscription endpoints and node TLS.
-- **[`netlify-edge-vless`](./protocols/netlify-edge-vless/SKILL.md)** — Deploy a serverless VLESS/VMess WebSocket relay on Netlify Edge Functions (Deno runtime) to bypass IP blocks.
+- **[`netlify-edge-vless`](./protocols/netlify-edge-vless/SKILL.md)** — Deploy high-performance WebSocket proxy relays on Netlify Edge Functions (Deno runtime) and Cloudflare Workers to bypass IP blocks.
 - **[`proxy-chain-routing`](./protocols/proxy-chain-routing/SKILL.md)** — Chain outbound proxy protocols (VLESS -> SOCKS5 -> Residential IP) to hide server IPs.
-- **[`sing-box-client`](./protocols/sing-box-client/SKILL.md)** — Construct advanced Sing-box client JSON configurations with TUN interfaces and DNS routing rules.
+- **[`sing-box-client`](./protocols/sing-box-client/SKILL.md)** — Advanced Sing-box client JSON configuration with TUN interface, strict DNS hijacking, and domain/IP routing rules.
 - **[`tuic-protocol`](./protocols/tuic-protocol/SKILL.md)** — Deploy TUIC proxy protocol over HTTP/3 QUIC transport, optimizing socket latency.
-- **[`vless-reality-nginx`](./protocols/vless-reality-nginx/SKILL.md)** — Configure VLESS + REALITY cohosted behind Nginx stream multiplexing using ssl_preread on port 443.
+- **[`vless-reality-nginx`](./protocols/vless-reality-nginx/SKILL.md)** — Masterclass configuration for VLESS + Reality cohosted on port 443 with Nginx stream module using ssl_preread for SNI-based routing.
 - **[`xui-panel-tuning`](./protocols/xui-panel-tuning/SKILL.md)** — Optimize x-ui/3x-ui panels: secure listening ports, automate cert renewals, and clean SQLite storage.
 
 ### 📂 `devops`
@@ -77,13 +77,13 @@ No placeholders, no 2,000 blank files. Only real recipes.
 ### 📂 `design`
 
 - **[`color-theory-wcag`](./design/color-theory-wcag/SKILL.md)** — Validate WCAG contrast thresholds, apply semantic palettes, and scale dark colors range.
-- **[`dark-mode-dynamic`](./design/dark-mode-dynamic/SKILL.md)** — Establish dynamic theme switching, OLED black styles, and state synchronization across layouts.
+- **[`dark-mode-dynamic`](./design/dark-mode-dynamic/SKILL.md)** — Construct dynamic theme providers, pure OLED black variables, and local persistence theme configurations.
 - **[`dashboard-data-visualization`](./design/dashboard-data-visualization/SKILL.md)** — Establish responsive KPI dashboards layouts, chart contrast guidelines, and grids structures.
 - **[`design-system-architecture`](./design/design-system-architecture/SKILL.md)** — Build Figma-aligned component styles mapping, CSS utility classes, and web design tokens.
 - **[`figma-to-code`](./design/figma-to-code/SKILL.md)** — Export Figma frame parameters to clean CSS utility frameworks without code pollution.
 - **[`onboarding-flow-design`](./design/onboarding-flow-design/SKILL.md)** — Establish progressive onboarding paths, interactive interface overlays, and onboarding triggers.
-- **[`premium-animations-motion`](./design/premium-animations-motion/SKILL.md)** — Design physics-backed spring animation systems and micro-interactions in Framer Motion.
-- **[`rtl-arabic-persian-ui`](./design/rtl-arabic-persian-ui/SKILL.md)** — Configure RTL layout mirroring, Vazirmatn font-family, and Persian numbers formatting.
+- **[`premium-animations-motion`](./design/premium-animations-motion/SKILL.md)** — Structure physics-backed spring animation easing curves and smooth micro-interactions in Framer Motion.
+- **[`rtl-arabic-persian-ui`](./design/rtl-arabic-persian-ui/SKILL.md)** — Configure Vazirmatn typography, mirror structural layouts, and format Persian numbers dynamically.
 - **[`typography-scales`](./design/typography-scales/SKILL.md)** — Format modular font scaling grids, fluid typography calculations, and vertical layout rhythms.
 - **[`ui-ux-design-principles`](./design/ui-ux-design-principles/SKILL.md)** — Apply visual contrast hierarchies, reduce users cognitive load, and construct smooth layouts flow.
 
@@ -91,8 +91,8 @@ No placeholders, no 2,000 blank files. Only real recipes.
 
 - **[`3d-asset-optimization`](./threed/3d-asset-optimization/SKILL.md)** — Reduce polycount via decimation, bake high-poly normals, and optimize GLTF asset packages.
 - **[`blender-geometry-nodes`](./threed/blender-geometry-nodes/SKILL.md)** — Construct procedural meshes generators using geometry nodes and custom vector inputs.
-- **[`blender-procedural-modeling`](./threed/blender-procedural-modeling/SKILL.md)** — Generate meshes dynamically inside Blender using Python BPY commands scripts.
-- **[`glsl-custom-shaders`](./threed/glsl-custom-shaders/SKILL.md)** — Write custom vertex and fragment GLSL shaders inside WebGL rendering loops.
+- **[`blender-procedural-modeling`](./threed/blender-procedural-modeling/SKILL.md)** — Headless asset generation inside Blender using python bpy module and dynamic procedural meshes math.
+- **[`glsl-custom-shaders`](./threed/glsl-custom-shaders/SKILL.md)** — Develop vertex/fragment GLSL shaders, mapping texture buffers, coordinate spaces, and custom rendering loops.
 - **[`pbr-texturing-workflow`](./threed/pbr-texturing-workflow/SKILL.md)** — Map metallic, roughness, and height parameters correctly inside PBR workflows.
 - **[`procedural-generation-noise`](./threed/procedural-generation-noise/SKILL.md)** — Apply Perlin/Simplex noise generators to create terrains and procedural textures.
 - **[`react-three-fiber-scenes`](./threed/react-three-fiber-scenes/SKILL.md)** — Structure 3D canvas environments, light sources, and shadow maps in React.
@@ -102,6 +102,7 @@ No placeholders, no 2,000 blank files. Only real recipes.
 
 ### 📂 `ai-tools`
 
+- **[`fable-reasoning-calibration`](./ai-tools/fable-reasoning-calibration/SKILL.md)** — Calibration rules for Fable/Claude 3.7 reasoning models, structuring step-by-step thinking for code compilation.
 - **[`fine-tuning-local-llms`](./ai-tools/fine-tuning-local-llms/SKILL.md)** — Configure QLoRA hyperparameters, structure tokenized datasets, and run training pipelines.
 - **[`llm-agent-architecture`](./ai-tools/llm-agent-architecture/SKILL.md)** — Establish ReAct workflows, tool schemas routing, and session history management.
 - **[`llm-evaluation-monitoring`](./ai-tools/llm-evaluation-monitoring/SKILL.md)** — Audit LLM prompt latency, tokens utilization, and factual alignment scores (Ragas).
@@ -133,6 +134,7 @@ No placeholders, no 2,000 blank files. Only real recipes.
 - **[`cli-tool-ux-design`](./general/cli-tool-ux-design/SKILL.md)** — Integrate rich CLI rendering parameters (colored texts, dynamic progress bars, and inputs).
 - **[`csv-excel-data-pipelines`](./general/csv-excel-data-pipelines/SKILL.md)** — Load and clean large CSV datasets in Python Pandas using chunked reading pipelines.
 - **[`git-internals-recovery`](./general/git-internals-recovery/SKILL.md)** — Audit git reflog parameters, restore detached commits, and fix complex rebase merge blocks.
+- **[`github-api-automation`](./general/github-api-automation/SKILL.md)** — Automate GitHub releases, assets uploading, tags parsing, and runner tracking using octokit and raw curl endpoints.
 - **[`json-yaml-data-parsing`](./general/json-yaml-data-parsing/SKILL.md)** — Parse nested JSON arrays using jq, filter variables, and validate schema outputs.
 - **[`markdown-documentation`](./general/markdown-documentation/SKILL.md)** — Configure static MKDocs sites containing interactive mermaid graphs mapping architectures.
 - **[`python-automation-scripts`](./general/python-automation-scripts/SKILL.md)** — Build high-speed asynchronous utility scripts, configuring CLI outputs using the Click framework.

@@ -1,33 +1,58 @@
 ---
 name: premium-animations-motion
-description: Design physics-backed spring animation systems and micro-interactions in Framer Motion.
+description: Structure physics-backed spring animation easing curves and smooth micro-interactions in Framer Motion.
 category: design
-tags: [animations, framer-motion, motion-design]
+tags: [animations, framer-motion, motion-design, web-design, micro-interactions]
 ---
 
-# Premium Animations Motion
+# Premium Spring Animations & Motion Masterclass
 
 ## When to Use
-Use when implementing design physics-backed spring animation systems and micro-interactions in framer motion. inside production application development loops.
+Use to build high-end UI micro-interactions (e.g. active toggle transitions, status changes, scroll effects) inspired by premium applications.
 
 ## Prerequisites
-- Valid execution environment and library packages.
+- Framer Motion library installed (`npm install framer-motion`).
 
 ## Workflow
-1. Plan component parameters and interfaces mapping requirements.
-2. Initialize configurations, write setup codes.
-3. Test boundaries, check output conditions.
+1. Select physics variables (stiffness, damping, mass) instead of linear time-based transitions.
+2. Build interactive animations triggers.
+3. Configure layout transitions to prevent layout shifts.
 
 ## Key Patterns
-```
-# General setup instructions for premium-animations-motion
-Verify environment parameters match target platform architectures.
+
+### React Connection Toggle (ToggleButton.jsx)
+```jsx
+import { motion } from "framer-motion";
+import { useState } from "react";
+
+export function ToggleButton({ isConnected, onToggle }) {
+  // Premium spring physics properties
+  const springConfig = { type: "spring", stiffness: 500, damping: 30, mass: 0.8 };
+
+  return (
+    <div
+      onClick={onToggle}
+      className={`w-16 h-10 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${
+        isConnected ? "bg-blue-600" : "bg-gray-800"
+      }`}
+    >
+      <motion.div
+        layout
+        transition={springConfig}
+        className="w-8 h-8 rounded-full bg-white shadow-md"
+        style={{
+          x: isConnected ? "24px" : "0px"
+        }}
+      />
+    </div>
+  );
+}
 ```
 
 ## Pitfalls
-- **Incorrect dependencies:** Missing libraries can lead to runtime errors. Check configs before compiling.
-- **Ignoring error scopes:** Catch and handle failures dynamically to prevent system crashes.
+- **Linear duration easing:** Linear timing configurations (`duration: 0.3s`) feel artificial and mechanical. Always utilize physical spring metrics.
+- **Re-triggering layout shifts:** Layout changes during animating states trigger browser repaints. Ensure bounds are fixed.
 
 ## Verification
-- Run local unit checks to confirm outputs match expectations.
-- Inspect logs for errors tags.
+- Test rendering loop performance at 120Hz refresh rates.
+- Verify animation state transitions match user inputs dynamically.
