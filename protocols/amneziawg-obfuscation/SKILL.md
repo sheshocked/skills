@@ -1,69 +1,52 @@
 ---
 name: amneziawg-obfuscation
-description: 
+description: Deploy AmneziaWG (obfuscated WireGuard) to defeat Deep Packet Inspection on restrictive networks.
 category: protocols
-tags: [amneziawg-obfuscation]
+tags: [amneziawg, wireguard, obfuscation, dpi-bypass, networking]
 ---
 
+# Amneziawg Obfuscation
+
 ## When to Use
-Deploy AmneziaWG to bypass DPI on WireGuard connections using junk packets and magic headers that defeat traffic analysis.
+Use when WireGuard connections are blocked by MCI or Irancell DPI engines detecting standard WireGuard handshakes.
 
-## What AmneziaWG Adds
-- **Jc** (Junk packet Count): Number of junk packets sent after handshake
-- **Jmin/Jmax**: Min/max size of junk packets (bytes)
-- **S1/S2**: Handshake init/padding size
-- **H1-H4**: Magic header values for packet identification
+## Prerequisites
+- AmneziaWG Go/Kernel module installed on server.
 
-## Config Comparison
+## Workflow
+1. Set up standard WireGuard peer configurations.
+2. Apply obfuscation parameter keys (`Jc`, `Jmin`, `Jmax`, `S1`, `S2`, `H1`, `H2`, `H3`, `H4`).
+3. Deploy configured peer details to client apps.
+
+## Key Patterns
 ```ini
-# Standard WireGuard
+# Client configuration parameters
 [Interface]
-PrivateKey = ...
-Address = 10.0.0.1/24
-ListenPort = 51820
+PrivateKey = CLIENT_PRIVATE_KEY
+Address = 10.0.0.2/32
+DNS = 1.1.1.1
 
-# AmneziaWG (added fields)
-[Interface]
-PrivateKey = ...
-Address = 10.0.0.1/24
-ListenPort = 51820
+# AmneziaWG obfuscated variables
 Jc = 4
-Jmin = 40
-Jmax = 70
-S1 = 0
-S2 = 0
-H1 = 0
-H2 = 0
-H3 = 0
-H4 = 0
+Jmin = 50
+Jmax = 1000
+S1 = 15
+S2 = 23
+H1 = 12
+H2 = 45
+H3 = 78
+H4 = 92
 
 [Peer]
-PublicKey = ...
+PublicKey = SERVER_PUBLIC_KEY
+Endpoint = 185.71.219.72:51820
 AllowedIPs = 0.0.0.0/0
-Endpoint = ...
-Jc = 4
-Jmin = 40
-Jmax = 70
-S1 = 0
-S2 = 0
-H1 = 0
-H2 = 0
-H3 = 0
-H4 = 0
 ```
 
-## DPI Evasion Strategy
-1. Set Jc=3-5, Jmin=40, Jmax=70 for realistic traffic patterns
-2. Use H1-H4 values that match common WireGuard packet headers
-3. Adjust S1/S2 for handshake padding to look like regular TLS
-4. Test against DPI systems (GFW, Iran DPI, etc.)
-
 ## Pitfalls
-- **Both sides must match**: Server and client must have identical J/H/S values
-- **Not bulletproof**: Advanced DPI may still detect patterns
-- **Performance overhead**: Junk packets add bandwidth usage
+- **Parameter mismatch:** All junk packet parameters must match server parameters exactly; otherwise handshakes fail instantly.
+- **High latency overhead:** Over-large Jmax values slow transmission due to overhead. Keep `Jmax` below `1200`.
 
 ## Verification
-- Compare packet sizes with/without AmneziaWG
-- Test against known DPI systems
-- Verify connection stability under load
+- Monitor handshakes: `awg show` on server.
+- Run tcpdump to verify packet payloads lack standard WireGuard headers.

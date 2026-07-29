@@ -1,73 +1,69 @@
 ---
 name: android-vpn-service
-description: 
+description: Establish a local TUN interface and route packet streams programmatically on Android using JNI/VPNService.
 category: android
-tags: [android-vpn-service]
+tags: [vpnservice, android-vpn, tun-interface, packet-routing, kotlin]
 ---
 
-## When to Use
-Use this skill when building VPN clients with Android VpnService: TUN interface, packet routing, per-app tunneling, always-on VPN.
+# Android Vpn Service
 
-## Core Concepts
-- **VpnService**: Android service that creates and manages a VPN interface
-- **TUN device**: Virtual network interface for capturing all traffic
-- **Packet filter**: Select which apps use the VPN (per-app tunneling)
-- **Always-on**: System-managed VPN that auto-reconnects
-- **FileDescriptor**: Raw packet read/write on the TUN interface
+## When to Use
+Use this skill when developing custom Android VPN clients (e.g., SurfShield, Aethery) that require kernel-level IP packet capture using Android's native `VpnService` API.
+
+## Prerequisites
+- Android SDK 29+ (Q+) for per-app filtering
+- Native C/C++ or Rust core for high-throughput packet processing
 
 ## Workflow
-1. Declare VpnService permission in AndroidManifest
-2. Request VPN permission with VpnService.prepare()
-3. Build VpnService.Builder with IP/DNS routes
-4. Open TUN FileDescriptor
-5. Read/write packets in a background thread
-6. Forward packets to upstream proxy (WireGuard, Xray, etc.)
+1. Declare the VPN service and permission in `AndroidManifest.xml`.
+2. Request user consent using `VpnService.prepare()`.
+3. Configure the local TUN interface using `VpnService.Builder` (MTU, IP, Routing, DNS).
+4. Establish the file descriptor and handle packet read/write loop in a background thread.
+5. Gracefully handle service destruction and interface teardown.
 
 ## Key Patterns
 ```kotlin
-// AndroidManifest
-<service android:name=".VpnTunnelService"
-    android:permission="android.permission.BIND_VPN_SERVICE">
+// AndroidManifest.xml
+<service
+    android:name=".MyVpnService"
+    android:permission="android.permission.BIND_VPN_SERVICE"
+    android:exported="false">
     <intent-filter>
         <action android:name="android.net.VpnService" />
     </intent-filter>
 </service>
 
-// Build VPN interface
-val builder = Builder()
-    .setSession("SurfShield")
-    .addAddress("10.0.0.2", 32)
-    .addRoute("0.0.0.0", 0)
-    .addDnsServer("1.1.1.1")
-    .setMtu(1500)
+// Core VPN Service implementation
+class MyVpnService : VpnService() {
+    private var vpnInterface: ParcelFileDescriptor? = null
 
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-    builder.setMetered(false)
-    builder.addAllowedApplication("com.target.app")
-}
+    fun startVpn() {
+        val builder = Builder()
+            .setSession("SurfShieldCore")
+            .setMtu(1400)
+            .addAddress("10.0.0.2", 32)
+            .addRoute("0.0.0.0", 0)
+            .addDnsServer("1.1.1.1")
+            .setBlocking(true)
+        
+        vpnInterface = builder.establish()
+        val fd = vpnInterface?.fd ?: return
+        
+        // Start native worker thread passing the fd
+        startNativeEngine(fd)
+    }
 
-val vpnInterface = builder.establish()  // Returns FileDescriptor
-
-// Read packets
-val input = FileInputStream(vpnInterface.fileDescriptor)
-val buffer = ByteArray(32767)
-while (true) {
-    val length = input.read(buffer)
-    if (length > 0) {
-        processPacket(buffer, length)
+    override fun onDestroy() {
+        vpnInterface?.close()
+        super.onDestroy()
     }
 }
 ```
 
 ## Pitfalls
-- **Permission denial**: User must grant VPN permission; handle denial gracefully
-- **Battery optimization**: Request exemption for always-on VPN
-- **Per-app filtering**: Only available on Android 10+
-- **DNS leaks**: Always route DNS through the VPN
-- **MTU**: Default 1500; some protocols need lower (1280 for IPv6)
+- **MTU size issues:** MTU above 1420 causes packet fragmentation over cellular networks (MCI/Irancell). Use `setMtu(1360)` or `1400`.
+- **Memory leaks in background loops:** Ensure the file descriptor loop closes properly when the service is stopped.
 
 ## Verification
-- Test with multiple apps to verify per-app routing
-- Check for DNS leaks with dnsleaktest.com
-- Verify all traffic goes through VPN with Wireshark
-- Test always-on with system settings
+- Run `adb shell dumpsys connectivity vpn` to verify the active VPN session.
+- Check packet routing using `ping -I tun0 1.1.1.1` in adb shell.

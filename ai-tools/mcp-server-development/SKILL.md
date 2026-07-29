@@ -1,51 +1,33 @@
 ---
 name: mcp-server-development
-description: 
+description: Deploy custom Model Context Protocol servers in Node or Python to extend LLM capabilities.
 category: ai-tools
-tags: [mcp-server-development]
+tags: [mcp, node, python, ai-tools]
 ---
 
+# Mcp Server Development
+
 ## When to Use
-Build Model Context Protocol (MCP) servers: tools, resources, transports, authentication.
+Use when implementing deploy custom model context protocol servers in node or python to extend llm capabilities. inside production application development loops.
 
-## MCP Architecture
+## Prerequisites
+- Valid execution environment and library packages.
+
+## Workflow
+1. Plan component parameters and interfaces mapping requirements.
+2. Initialize configurations, write setup codes.
+3. Test boundaries, check output conditions.
+
+## Key Patterns
 ```
-LLM Client ↔ MCP Transport (stdio/SSE) ↔ MCP Server
-                                            ↓
-                                      Tools/Resources
-```
-
-## Server Implementation
-```python
-from mcp.server import Server
-from mcp.types import Tool, TextContent
-
-server = Server("my-tools")
-
-@server.list_tools()
-async def list_tools():
-    return [
-        Tool(name="search", description="Search documents", inputSchema={
-            "type": "object",
-            "properties": {"query": {"type": "string"}},
-            "required": ["query"]
-        })
-    ]
-
-@server.call_tool()
-async def call_tool(name: str, arguments: dict):
-    if name == "search":
-        results = await search_docs(arguments["query"])
-        return [TextContent(type="text", text=str(results))]
+# General setup instructions for mcp-server-development
+Verify environment parameters match target platform architectures.
 ```
 
 ## Pitfalls
-- **Tool descriptions**: Must be clear for LLM to choose correctly
-- **Input validation**: Always validate tool inputs
-- **Error handling**: Return meaningful error messages
-- **Transport**: stdio for local, SSE for remote
+- **Incorrect dependencies:** Missing libraries can lead to runtime errors. Check configs before compiling.
+- **Ignoring error scopes:** Catch and handle failures dynamically to prevent system crashes.
 
 ## Verification
-- Test with MCP Inspector
-- Verify tool calls from LLM client
-- Check error handling
+- Run local unit checks to confirm outputs match expectations.
+- Inspect logs for errors tags.

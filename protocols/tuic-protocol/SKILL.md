@@ -1,37 +1,42 @@
 ---
 name: tuic-protocol
-description: 
+description: Deploy TUIC proxy protocol over HTTP/3 QUIC transport, optimizing socket latency.
 category: protocols
-tags: [tuic-protocol]
+tags: [tuic, quic, http3, udp-performance, proxy]
 ---
 
-## When to Use
-Deploy TUIC v5 QUIC-based proxy for zero-RTT connections and UDP relay.
+# Tuic Protocol
 
-## Server Config
+## When to Use
+Use to run lightweight, highly multiplexed UDP/TCP streams inside HTTP/3 connections.
+
+## Prerequisites
+- TUIC binary compiled and installed.
+
+## Workflow
+1. Configure server certificate and listening UDP port.
+2. Select Congestion Control settings (BBR/cubic).
+3. Connect with client wrapper mapping local SOCKS to remote server.
+
+## Key Patterns
 ```json
+// TUIC Server Config
 {
-    "relay": {
-        "token": "YOUR_TOKEN",
-        "users": {
-            "USER_UUID": "PASSWORD"
-        },
-        "congestion_control": "bbr"
-    },
-    "server": [
-        "[::]:443"
-    ],
-    "certificate": "/path/fullchain.pem",
-    "private_key": "/path/privkey.pem"
+  "server": "[::]:8443",
+  "users": {
+    "UUID-KEY-HERE": "my_password"
+  },
+  "certificate": "/path/to/cert.pem",
+  "private_key": "/path/to/privkey.pem",
+  "congestion_control": "bbr",
+  "alpn": ["h3"]
 }
 ```
 
 ## Pitfalls
-- **TUIC v5**: Use v5 config format, not v4
-- **UDP**: QUIC requires UDP connectivity
-- **Congestion**: BBR recommended for best performance
+- **Firewall blocking:** Ensure UDP ports match open rules inside security policies.
+- **Certificate validity:** TUIC checks timestamps strictly; ensure system times are synchronized.
 
 ## Verification
-- Test with tuic-client
-- Check zero-RTT connection
-- Verify UDP relay works
+- Verify start validation logs.
+- Perform connectivity check from client dashboard.

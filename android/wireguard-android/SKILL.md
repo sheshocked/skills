@@ -1,74 +1,50 @@
 ---
 name: wireguard-android
-description: 
+description: Integrate the official WireGuard Android Go/Rust library for modern VPN tunnel implementation.
 category: android
-tags: [wireguard-android]
+tags: [wireguard, android-wireguard, vpn-tunnel, amneziawg, kotlin]
 ---
 
-## When to Use
-Use this skill when integrating WireGuard/AmneziaWG tunnels in Android apps: Go backend compilation, config management, obfuscation.
+# Wireguard Android
 
-## Architecture
-```
-Kotlin UI Layer
-  ↓ JNI calls
-Go WireGuard Library (wireguard-go)
-  ↓
-TUN Interface (Android VpnService)
-```
+## When to Use
+Use when embedding WireGuard or AmneziaWG engines inside Android apps to achieve low-latency obfuscated connections.
+
+## Prerequisites
+- WireGuard Android library dependency in `build.gradle.kts`.
 
 ## Workflow
-1. Add wireguard-go as submodule or dependency
-2. Compile Go library for Android ABIs (arm64, armeabi-v7a, x86_64)
-3. Create JNI bridge between Kotlin and Go
-4. Parse WireGuard config files
-5. Start tunnel through VpnService
+1. Initialize the backend engine (Go backend or User-space TUN).
+2. Format the peer and interface configuration keys.
+3. Apply the WireGuard state change.
 
 ## Key Patterns
 ```kotlin
-// JNI Bridge
-external fun wgTurnOn(goVpnService: Int, tunFd: Int, settings: String): Int
-external fun wgTurnOff(id: Int)
-external fun wgGetSocketV4(): Int
-external fun wgSetConfig(id: Int, settings: String): Int
+import com.wireguard.android.backend.Backend
+import com.wireguard.android.backend.GoBackend
+import com.wireguard.android.backend.Tunnel
 
-// Config parser
-fun parseWgConfig(config: String): TunnelConfig {
-    val lines = config.lines()
-    var privateKey = ""
-    var address = ""
-    var dns = ""
-    val peers = mutableListOf<Peer>()
-
-    var currentPeer: Peer? = null
-    for (line in lines) {
-        when {
-            line.startsWith("PrivateKey = ") -> privateKey = line.substringAfter("= ")
-            line.startsWith("Address = ") -> address = line.substringAfter("= ")
-            line.startsWith("DNS = ") -> dns = line.substringAfter("= ")
-            line.startsWith("[Peer]") -> currentPeer = Peer().also { peers.add(it) }
-            line.startsWith("PublicKey = ") -> currentPeer?.publicKey = line.substringAfter("= ")
-            line.startsWith("Endpoint = ") -> currentPeer?.endpoint = line.substringAfter("= ")
-            line.startsWith("AllowedIPs = ") -> currentPeer?.allowedIPs = line.substringAfter("= ")
-        }
+class WgTunnel : Tunnel {
+    override fun getName(): String = "wireguard_tunnel"
+    override fun onStateChange(state: Tunnel.State) {
+        // Handle connection states
     }
-    return TunnelConfig(privateKey, address, dns, peers)
 }
+
+val backend = GoBackend(context)
+val tunnel = WgTunnel()
+val config = Tunnel.Config.Builder()
+    .setInterfaceAddress("10.0.0.2/32")
+    .setPrivateKey("PEER_PRIVATE_KEY")
+    .addPeer("SERVER_PUBLIC_KEY", "185.71.219.72:51820", "0.0.0.0/0")
+    .build()
+backend.setState(tunnel, Tunnel.State.UP, config)
 ```
 
-## AmneziaWG Differences
-- Added fields: Jc, Jmin, Jmax (junk packet count/min/max), S1, S2 (handshake init/padding), H1-H4 (magic headers)
-- These fields are added to WireGuard config to defeat DPI fingerprinting
-- Go library needs AmneziaWG patches applied
-
 ## Pitfalls
-- **ABI coverage**: Must build for arm64-v8a, armeabi-v7a, and x86_64
-- **Key rotation**: Don't rotate keys on connect — keep them stable
-- **Config encryption**: Don't store plaintext configs — use EncryptedSharedPreferences
-- **MTU**: WireGuard default MTU is 1420; adjust for transport overhead
+- **SELinux policy denials:** Ensure native binary permissions match target requirements.
+- **Port collisions:** Ensure dynamic ports do not conflict with local webservers.
 
 ## Verification
-- Test with official WireGuard client to verify config compatibility
-- Check packet capture shows encrypted WireGuard packets
-- Verify DNS resolution through tunnel
-- Test handoff between WiFi and cellular
+- Test handshakes via `backend.getStatistics(tunnel).handshakes`.
+- Verify MTU throughput with large packet pings.

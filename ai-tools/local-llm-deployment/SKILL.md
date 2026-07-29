@@ -1,46 +1,33 @@
 ---
 name: local-llm-deployment
-description: 
+description: Deploy Ollama / vLLM inference runners on custom GPU servers, configuring context limits.
 category: ai-tools
-tags: [local-llm-deployment]
+tags: [ollama, vllm, gpu-deployment, ai-tools]
 ---
 
+# Local Llm Deployment
+
 ## When to Use
-Run LLMs locally: Ollama, llama.cpp, vLLM, quantization, GPU sizing.
+Use when implementing deploy ollama / vllm inference runners on custom gpu servers, configuring context limits. inside production application development loops.
 
-## Ollama Setup
-```bash
-# Install
-curl -fsSL https://ollama.com/install.sh | sh
+## Prerequisites
+- Valid execution environment and library packages.
 
-# Run model
-ollama run llama3.1:8b
+## Workflow
+1. Plan component parameters and interfaces mapping requirements.
+2. Initialize configurations, write setup codes.
+3. Test boundaries, check output conditions.
 
-# API
-curl http://localhost:11434/api/generate -d '{"model":"llama3.1:8b","prompt":"Hello"}'
+## Key Patterns
+```
+# General setup instructions for local-llm-deployment
+Verify environment parameters match target platform architectures.
 ```
 
-## Quantization Guide
-| Format | Size (7B) | Quality | Speed |
-|---|---|---|---|
-| FP16 | 14GB | Best | Slowest |
-| Q8_0 | 7GB | Excellent | Fast |
-| Q4_K_M | 4GB | Good | Fastest |
-| Q2_K | 3GB | Reduced | Fastest |
-
-## GPU Sizing
-- **7B**: 8GB VRAM (Q4), 16GB (FP16)
-- **13B**: 16GB VRAM (Q4), 32GB (FP16)
-- **70B**: 48GB VRAM (Q4), 140GB (FP16)
-
 ## Pitfalls
-- **Quantization loss**: Q4 loses ~2-5% accuracy on complex reasoning
-- **Context length**: Local models may have shorter context windows
-- **Memory**: RAM fallback is 10x slower than GPU
-- **Batch serving**: vLLM is better than Ollama for high throughput
+- **Incorrect dependencies:** Missing libraries can lead to runtime errors. Check configs before compiling.
+- **Ignoring error scopes:** Catch and handle failures dynamically to prevent system crashes.
 
 ## Verification
-- Benchmark tokens/second
-- Test quality on domain-specific tasks
-- Verify VRAM usage with nvidia-smi
-- Check for memory leaks during long sessions
+- Run local unit checks to confirm outputs match expectations.
+- Inspect logs for errors tags.

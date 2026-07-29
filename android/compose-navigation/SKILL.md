@@ -1,57 +1,52 @@
 ---
 name: compose-navigation
-description: 
+description: Establish type-safe navigation graphs and customized screen transition animations in Compose.
 category: android
-tags: [compose-navigation]
+tags: [compose-navigation, type-safety, transitions, kotlin]
 ---
 
-## When to Use
-Use this skill when implementing Compose Navigation: type-safe navigation, nested graphs, deep links, predictive back.
+# Compose Navigation
 
-## Core Concepts
-- **NavHost**: Container for composable destinations
-- **NavController**: Navigate between destinations
-- **Type-safe args**: Use @Serializable data classes for arguments
-- **Nested graphs**: Group related routes
-- **Deep links**: Open specific screens from URLs
+## When to Use
+Use when implementing modular navigations with custom sliding/fading screen transitions.
+
+## Prerequisites
+- Compose Navigation dependency `androidx.navigation:navigation-compose`.
+
+## Workflow
+1. Define type-safe screens as Serializable classes or objects.
+2. Build the `NavHost` containing all screen paths.
+3. Configure `enterTransition` and `exitTransition` animations.
 
 ## Key Patterns
 ```kotlin
-// Route definitions
-@Serializable object Home
-@Serializable data class Profile(val userId: Long)
-@Serializable object Settings
-
-// NavHost
-NavHost(navController, startDestination = Home) {
-    composable<Home> { HomeScreen(onNavigateToProfile = { navController.navigate(Profile(userId = it)) }) }
-    composable<Profile> { backStackEntry ->
-        val profile = backStackEntry.toRoute<Profile>()
-        ProfileScreen(userId = profile.userId)
-    }
-    composable<Settings> { SettingsScreen() }
+@Serializable
+sealed class Screen {
+    @Serializable data object Dashboard : Screen()
+    @Serializable data class Settings(val theme: String) : Screen()
 }
 
-// Deep links
-composable<Home>(
-    deepLinks = listOf(navDeepLink<Home>(basePath = "myapp://home"))
-) { ... }
-
-// Nested navigation
-navigation(startDestination = "list", route = "profile") {
-    composable("list") { ProfileList() }
-    composable("detail/{id}") { ... }
+@Composable
+fun AppNavigation(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Dashboard,
+        enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
+        exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) }
+    ) {
+        composable<Screen.Dashboard> { DashboardScreen(navController) }
+        composable<Screen.Settings> { backStackEntry ->
+            val settings = backStackEntry.toRoute<Screen.Settings>()
+            SettingsScreen(settings.theme)
+        }
+    }
 }
 ```
 
 ## Pitfalls
-- **Argument types**: Only primitive types and @Serializable classes
-- **Nested back stack**: PopUpTo and restoreState for bottom nav
-- **Predictive back**: Test with Android 14+ back gesture
-- **State restoration**: Use rememberSaveable with navigation args
+- **State losses on orientation change:** Pass only primitive parameters in routes; fetch complex structures from shared ViewModels.
+- **Deep nesting paths:** Keep screen routes flat to avoid navigation graph pollution.
 
 ## Verification
-- Test deep links with adb shell am start
-- Verify back navigation behavior
-- Test state preservation across config changes
-- Check nested graph navigation
+- Verify argument parsing works when pushing deep links.
+- Test navigation actions do not leak instances of ViewModels.

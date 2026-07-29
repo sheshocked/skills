@@ -1,44 +1,47 @@
 ---
 name: hysteria2-quic
-description: 
+description: Deploy Hysteria2 QUIC-based VPN protocol, tuning congestion control for high packet loss networks.
 category: protocols
-tags: [hysteria2-quic]
+tags: [hysteria2, quic, congestion-control, bbr, udp-proxy]
 ---
 
-## When to Use
-Deploy Hysteria2 QUIC proxy for high-throughput, low-latency connections with masquerade support.
+# Hysteria2 Quic
 
-## Server Config
+## When to Use
+Use Hysteria2 to achieve high-speed connections on networks experiencing heavy packet loss (e.g. mobile networks during throttling).
+
+## Prerequisites
+- Port 443 UDP free on server.
+- Valid SSL certificate.
+
+## Workflow
+1. Install Hysteria2 server engine.
+2. Tune system UDP buffer limits using sysctl.
+3. Configure server with SSL cert, port, and authentication password.
+
+## Key Patterns
 ```yaml
+# /etc/hysteria/config.yaml
 listen: :443
+
 tls:
-  cert: /path/fullchain.pem
-  key: /path/privkey.pem
+  cert: /etc/letsencrypt/live/proxy.domain.com/fullchain.pem
+  key: /etc/letsencrypt/live/proxy.domain.com/privkey.pem
+
 auth:
   type: password
-  password: YOUR_PASSWORD
+  password: mysecretpassword
+
 masquerade:
   type: proxy
   proxy:
     url: https://www.bing.com
-    rewriteHost: true
-```
-
-## Client Config
-```
-server: YOUR_IP:443
-auth: YOUR_PASSWORD
-tls:
-  sni: YOUR_DOMAIN
-  insecure: false
 ```
 
 ## Pitfalls
-- **Bandwidth**: Set correct bandwidth for BBR congestion control
-- **UDP**: QUIC requires UDP — ensure firewall allows it
-- **Certificate**: Need valid TLS cert for server
+- **UDP throttling:** Some providers block high UDP flows. Set up port hopping on client and server to bypass blocks.
+- **Low UDP buffer warning:** Always increase kernel UDP socket limits to avoid dropped packets.
 
 ## Verification
-- Test with hysteria client
-- Check bandwidth limits
-- Verify masquerade serves web content
+- Verify server runs: `systemctl status hysteria-server`.
+- Test speed and bandwidth performance with Hysteria client console.

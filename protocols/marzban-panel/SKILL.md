@@ -1,32 +1,42 @@
 ---
 name: marzban-panel
-description: 
+description: Deploy Marzban multi-node management panel, configure subscription endpoints and node TLS.
 category: protocols
-tags: [marzban-panel]
+tags: [marzban, vless-sub, multi-node, python, docker-compose]
 ---
 
-## When to Use
-Set up Marzban multi-protocol panel with node management, user management, and Telegram bot integration.
+# Marzban Panel
 
-## Installation
-```bash
-git clone https://github.com/Gozargah/Marzban
-cd Marzban
-docker compose up -d
+## When to Use
+Use when managing high-scale proxy setups with multiple backend VPS nodes and client subscription endpoints.
+
+## Prerequisites
+- Docker & Docker Compose installed.
+
+## Workflow
+1. Clone Marzban repo and generate env keys.
+2. Launch core dashboard containers.
+3. Establish node link connections using certificate handshakes.
+
+## Key Patterns
+```yaml
+# docker-compose.yml for Marzban
+version: "3"
+services:
+  marzban:
+    image: gozargah/marzban:latest
+    restart: always
+    env_file: .env
+    volumes:
+      - /var/lib/marzban:/var/lib/marzban
+    ports:
+      - "8000:8000"
 ```
 
-## Key Features
-- Multi-protocol: VLESS, VMess, Trojan, Shadowsocks
-- Node management for multi-server
-- User expiration and data limits
-- Telegram bot for user management
-
 ## Pitfalls
-- **Database**: Use MySQL/PostgreSQL for production
-- **SSL**: Configure reverse proxy with SSL
-- **Backups**: Regular database and config backups
+- **Database lockouts:** Use external Postgres containers for scaling; local SQLite file locking blocks connections under high load.
+- **Node sync failure:** Verify security keys are identical in nodes env profiles.
 
 ## Verification
-- Test user creation and subscription
-- Verify multi-protocol inbounds work
-- Check node connectivity
+- Verify containers run with `docker compose ps`.
+- Query sub path using HTTP client and inspect returned configurations.

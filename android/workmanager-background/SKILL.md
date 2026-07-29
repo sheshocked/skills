@@ -1,82 +1,51 @@
 ---
 name: workmanager-background
-description: 
+description: Schedule persistent background tasks with network and device constraints using Android WorkManager.
 category: android
-tags: [workmanager-background]
+tags: [workmanager, background-task, scheduler, kotlin]
 ---
 
-## When to Use
-Use this skill when implementing reliable background work in Android: periodic sync, one-time tasks, constraints, chains, and expedited work.
+# Workmanager Background
 
-## Core Concepts
-- **Worker**: DoWork() runs once; return Result.success/failure/retry
-- **CoroutineWorker**: Coroutine version with suspend doWork()
-- **PeriodicWorkRequest**: Runs repeatedly with minimum interval (15 min)
-- **OneTimeWorkRequest**: Runs once with optional delay
-- **Constraints**: Network, battery, charging, storage requirements
-- **WorkRequest.Builder**: Configure backoff, tags, chaining
+## When to Use
+Use for non-immediate, guaranteed tasks (uploading connection diagnostics, syncing proxy configurations, pruning local logs).
+
+## Prerequisites
+- WorkManager dependency.
 
 ## Workflow
-1. Create Worker class extending CoroutineWorker
-2. Build WorkRequest with constraints
-3. Enqueue via WorkManager
-4. Observe work status with LiveData or Flow
+1. Create a class extending `CoroutineWorker`.
+2. Set execution constraints (network state, battery levels).
+3. Enqueue the work using `WorkManager.getInstance()`.
 
 ## Key Patterns
 ```kotlin
-// Worker
-class SyncWorker(
-    context: Context,
-    params: WorkerParameters
-) : CoroutineWorker(context, params) {
+class ConfigSyncWorker(context: Context, params: WorkerParameters) :
+    CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        return try {
-            repository.sync()
-            Result.success()
-        } catch (e: Exception) {
-            if (runAttemptCount < 3) Result.retry() else Result.failure()
-        }
+        val success = syncConfigWithServer()
+        return if (success) Result.success() else Result.retry()
     }
 }
 
-// Enqueue with constraints
 val constraints = Constraints.Builder()
     .setRequiredNetworkType(NetworkType.CONNECTED)
     .setRequiresBatteryNotLow(true)
     .build()
 
-val syncWork = OneTimeWorkRequestBuilder<SyncWorker>()
+val syncRequest = PeriodicWorkRequestBuilder<ConfigSyncWorker>(1, TimeUnit.HOURS)
     .setConstraints(constraints)
-    .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.SECONDS)
-    .addTag("sync")
     .build()
 
-WorkManager.getInstance(context).enqueueUniqueWork(
-    "sync", ExistingWorkPolicy.REPLACE, syncWork
+WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+    "config_sync", ExistingPeriodicWorkPolicy.KEEP, syncRequest
 )
-
-// Observe status
-WorkManager.getInstance(context).getWorkInfosByTagLiveData("sync")
-    .observe(this) { works ->
-        works?.firstOrNull()?.let { workInfo ->
-            when (workInfo.state) {
-                WorkInfo.State.SUCCEEDED -> showSuccess()
-                WorkInfo.State.FAILED -> showError()
-                WorkInfo.State.RUNNING -> showProgress()
-                else -> {}
-            }
-        }
-    }
 ```
 
 ## Pitfalls
-- **Minimum interval**: Periodic work minimum is 15 minutes
-- **Expedited work**: Use setExpedited() for near-immediate execution
-- **Chaining**: Use .then() to sequence tasks
-- **Tags**: Use unique tags for cancellation and querying
-- **Test**: Use TestWorkerBuilder or TestListenableWorkerBuilder
+- **Background limitations:** OEM power managers (Samsung/Xiaomi) kill workers aggressively. Handle failures gracefully or request battery exemption.
+- **Short sync intervals:** Minimum periodic interval is 15 minutes; setting shorter defaults to 15.
 
 ## Verification
-- Use WorkManager Testing APIs
-- Verify constraints are respected
-- Test retry logic with custom WorkerFactory
+- Inspect scheduled jobs with `./gradlew workmanager-inspection`.
+- Trigger work via adb command `adb shell cmd jobscheduler run -f <package> <id>`.

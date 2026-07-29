@@ -1,69 +1,52 @@
 ---
 name: android-security-keystore
-description: 
+description: Encrypt user credentials and private configs using Android Hardware-Backed Keystore API.
 category: android
-tags: [android-security-keystore]
+tags: [keystore, encryption, biometrics, aes-gcm, security]
 ---
 
-## When to Use
-Use this skill when implementing Android security: Keystore encryption, biometric authentication, certificate pinning, secure storage.
+# Android Security Keystore
 
-## Core Concepts
-- **Android Keystore**: Hardware-backed key storage
-- **EncryptedSharedPreferences**: Encrypted key-value storage
-- **BiometricPrompt**: Biometric authentication (fingerprint, face, iris)
-- **Network Security Config**: Certificate pinning, cleartext rules
+## When to Use
+Use when storing high-risk configs (VPN private keys, tokens) securely on the device.
+
+## Prerequisites
+- Android SDK 23+ (Marshmallow).
 
 ## Workflow
-1. Generate keys in Android Keystore
-2. Use EncryptedSharedPreferences for sensitive data
-3. Implement BiometricPrompt for auth
-4. Configure network security for pinning
+1. Initialize `KeyStore` instance.
+2. Generate AES key using `KeyGenParameterSpec` configured with StrongBox/Hardware backing.
+3. Encrypt data with AES-GCM and store initialization vector (IV) alongside cipher text.
 
 ## Key Patterns
 ```kotlin
-// Keystore key generation
-val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
-keyGenerator.init(KeyGenParameterSpec.Builder("my_key",
-    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-    .build())
-val secretKey = keyGenerator.generateKey()
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import java.security.KeyStore
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
 
-// EncryptedSharedPreferences
-val masterKey = MasterKey.Builder(context)
-    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-    .build()
-val prefs = EncryptedSharedPreferences.create(context, "secret_prefs", masterKey,
-    PrefKeyEncryptionScheme.AES256_SIV, PrefValueEncryptionScheme.AES256_GCM)
-
-// BiometricPrompt
-val promptInfo = BiometricPrompt.PromptInfo.Builder()
-    .setTitle("Verify identity")
-    .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
-    .build()
-biometricPrompt.authenticate(promptInfo)
-
-// Certificate pinning (network_security_config.xml)
-<network-security-config>
-    <domain-config>
-        <domain includeSubdomains="true">api.example.com</domain>
-        <pin-set>
-            <pin digest="SHA-256">base64_hash=</pin>
-        </pin-set>
-    </domain-config>
-</network-security-config>
+fun generateSecretKey(alias: String) {
+    val keyGenerator = KeyGenerator.getInstance(
+        KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore"
+    )
+    val spec = KeyGenParameterSpec.Builder(
+        alias,
+        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+    )
+        .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+        .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+        .setKeySize(256)
+        .build()
+    keyGenerator.init(spec)
+    keyGenerator.generateKey()
+}
 ```
 
 ## Pitfalls
-- **Keystore on emulator**: Some KeyStore features unavailable — test on real device
-- **Biometric fallback**: Always provide device credential fallback
-- **Certificate pinning**: Update pins before expiry; use backup pins
-- **Encrypted prefs**: Don't store large data — use EncryptedFile instead
+- **Key invalidation:** Using `setUserAuthenticationRequired(true)` invalidates keys when users change device locks. Configure fallback flows.
+- **No StrongBox support:** Some hardware lacks StrongBox; fallback to TEE-backed generation.
 
 ## Verification
-- Test on physical device for KeyStore
-- Verify biometric prompt appears correctly
-- Test certificate pinning with Charles proxy
-- Check EncryptedSharedPreferences encrypts at rest
+- Test file decryption on root/unrooted hardware to confirm file safety.
+- Verify cryptographic operations throw standard keys exceptions on lock changes.

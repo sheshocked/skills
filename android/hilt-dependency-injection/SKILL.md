@@ -1,72 +1,33 @@
 ---
 name: hilt-dependency-injection
-description: 
+description: Configure Hilt DI graph, ViewModels injection, and modular dependencies scopes in Android apps.
 category: android
-tags: [hilt-dependency-injection]
+tags: [hilt, dependency-injection, dagger, kotlin]
 ---
 
-## When to Use
-Use this skill when setting up dependency injection in Android with Hilt/Dagger: modules, scoping, qualifiers, and testing.
+# Hilt Dependency Injection
 
-## Core Concepts
-- **@HiltAndroidApp**: Application class entry point
-- **@AndroidEntryPoint**: Inject into Activity/Fragment/Service
-- **@HiltViewModel**: Inject into ViewModel
-- **@Module + @InstallIn**: Provide dependencies for a component scope
-- **@Singleton, @ViewModelScoped, @ActivityScoped**: Lifecycle scoping
+## When to Use
+Use when implementing configure hilt di graph, viewmodels injection, and modular dependencies scopes in android apps. inside production application development loops.
+
+## Prerequisites
+- Valid execution environment and library packages.
 
 ## Workflow
-1. Add Hilt plugin to build.gradle
-2. Annotate Application with @HiltAndroidApp
-3. Create modules for complex dependencies
-4. Inject via constructor or @Inject fields
-5. Use @Provides or @Binds in modules
+1. Plan component parameters and interfaces mapping requirements.
+2. Initialize configurations, write setup codes.
+3. Test boundaries, check output conditions.
 
 ## Key Patterns
-```kotlin
-// Module
-@Module
-@InstallIn(SingletonComponent::class)
-object NetworkModule {
-    @Provides @Singleton
-    fun provideRetrofit(): Retrofit = Retrofit.Builder()
-        .baseUrl("https://api.example.com/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    @Provides @Singleton
-    fun provideUserApi(retrofit: Retrofit): UserApi =
-        retrofit.create(UserApi::class.java)
-}
-
-// Binds interface to implementation
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
-    @Binds abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
-}
-
-// ViewModel injection
-@HiltViewModel
-class UsersViewModel @Inject constructor(
-    private val getUsersUseCase: GetUsersUseCase
-) : ViewModel()
-
-// Activity
-@AndroidEntryPoint
-class MainActivity : ComponentActivity() {
-    private val viewModel: UsersViewModel by viewModels()
-}
+```
+# General setup instructions for hilt-dependency-injection
+Verify environment parameters match target platform architectures.
 ```
 
 ## Pitfalls
-- **Missing @InstallIn**: Module won't be found if not installed in correct component
-- **Circular dependency**: Break with lazy<T> or provider<T>
-- **Wrong scope**: @Singleton lives forever, @ViewModelScoped per ViewModel
-- **Context injection**: Use @ApplicationContext for Application context
-- **Testing**: Use @TestInstallIn to swap modules in tests
+- **Incorrect dependencies:** Missing libraries can lead to runtime errors. Check configs before compiling.
+- **Ignoring error scopes:** Catch and handle failures dynamically to prevent system crashes.
 
 ## Verification
-- Compile-time errors catch most DI issues
-- Use Hilt testing APIs: @UninstallModules, @TestInstallIn
-- Run with ./gradlew connectedAndroidTest
+- Run local unit checks to confirm outputs match expectations.
+- Inspect logs for errors tags.
